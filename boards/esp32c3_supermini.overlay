@@ -1,0 +1,11 @@
+/ {
+  chosen {
+    /* zephyr,display = &ssd1306; */
+  };
+  aliases {
+  };
+  
+  buttons { 
+    
+  };
+};
