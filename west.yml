@@ -1,0 +1,6 @@
+manifest:
+  projects:
+    - name: app-nvs-lib
+      url: https://github.com/pandazxx/app-nvs-lib.git
+      revision: main
+      path: modules/app-nvs-lib
