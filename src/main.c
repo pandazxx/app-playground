@@ -13,7 +13,7 @@ static app_dns_record test_dns_record = {.resolved = false,
                                          .host_name = "hcs01.local"};
 
 static struct mqtt_topic test_topic1 = {
-    .topic = MQTT_UTF8_LITERAL("sensor/test"),
+    .topic = MQTT_UTF8_LITERAL("v1/sensors/test/state"),
     .qos = MQTT_QOS_1_AT_LEAST_ONCE,
 };
 
@@ -52,8 +52,9 @@ int main(void) {
     app_poll_loop();
     uint8_t mqtt_buf[256];
 
-    snprintk(mqtt_buf, sizeof(mqtt_buf), "test_topic1:  %d",
-             test_topic_value++);
+    snprintk(mqtt_buf, sizeof(mqtt_buf), "{ \"temp_c\":  %d } ",
+             test_topic_value);
+    test_topic_value = (test_topic_value + 1) % 50;
     app_mqtt_publish(test_topic1, (struct mqtt_binstr){
                                       .data = mqtt_buf,
                                       .len = strlen(mqtt_buf),
