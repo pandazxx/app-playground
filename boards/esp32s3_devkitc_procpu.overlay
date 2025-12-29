@@ -1,0 +1,48 @@
+/ {
+  chosen {
+    /* zephyr,display = &ssd1306; */
+  };
+  aliases {
+  };
+
+  buttons {
+  };
+};
+
+&i2c0 {
+  status = "okay";
+  clock-frequency = <I2C_BITRATE_STANDARD>;
+  pinctrl-0 = <&i2c0_default>;
+  pinctrl-names = "default";
+
+  ina0: ina3221@40 {
+    compatible = "ti,ina3221";
+    reg = <0x40>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    status = "okay";
+    label = "INA3221_0";
+    shunt-resistors = <010 010 010>;
+    conv-time-shunt = <6>;
+    conv-time-bus = <6>;
+    avg-mode = <2>;
+
+    channel@0 {
+      compatible = "app,ina3221channel";
+      reg = <0>;
+      app,tag = "main_12v";
+    };
+
+    channel@1 {
+      compatible = "app,ina3221channel";
+      reg = <1>;
+      app,tag = "fan_12v";
+    };
+
+    channel@2 {
+      compatible = "app,ina3221channel";
+      reg = <2>;
+      app,tag = "aux_5v";
+    };
+  };
+};

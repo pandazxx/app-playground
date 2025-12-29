@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: App-specific metadata for INA3221 channel tags.
+
+compatible: "app,ina3221channel"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+    description: INA3221 channel index (0..2).
+  app,tag:
+    type: string
+    description: Custom tag to publish with this channel.
+  app,description:
+    type: string
+    description: Optional description for this channel.
