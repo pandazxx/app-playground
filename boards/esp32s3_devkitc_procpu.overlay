@@ -20,7 +20,7 @@
     reg = <0x40>;
     #address-cells = <1>;
     #size-cells = <0>;
-    status = "okay";
+    status = "disabled";
     label = "INA3221_0";
     shunt-resistors = <010 010 010>;
     conv-time-shunt = <6>;
@@ -43,6 +43,36 @@
       compatible = "app,ina3221channel";
       reg = <2>;
       app,tag = "aux_5v";
+    };
+  };
+  ina1: ina3221@41 {
+    compatible = "ti,ina3221";
+    reg = <0x41>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    label = "INA3221_1";
+    status = "okay";
+    shunt-resistors = <10 10 10>;
+    conv-time-shunt = <6>;
+    conv-time-bus = <6>;
+    avg-mode = <2>;
+
+    channel@0 {
+      compatible = "app,ina3221channel";
+      reg = <0>;
+      app,tag = "module2_12v";
+    };
+
+    channel@1 {
+      compatible = "app,ina3221channel";
+      reg = <1>;
+      app,tag = "module2_fan";
+    };
+
+    channel@2 {
+      compatible = "app,ina3221channel";
+      reg = <2>;
+      app,tag = "module2_aux";
     };
   };
 };

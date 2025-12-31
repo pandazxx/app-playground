@@ -27,6 +27,7 @@ struct ina3221_channel_meta {
   uint8_t channel;
   const char *tag;
 };
+// static const struct device *const ina1 = DEVICE_DT_GET(DT_NODELABEL(ina1));
 
 #define INA3221_CHANNEL_TAG(node_id)                                           \
   DT_PROP_OR(node_id, app_tag,                                                 \
@@ -47,9 +48,10 @@ static const struct ina3221_channel_meta ina3221_channels[] = {
 #endif
 };
 
-static double sensor_value_to_double_local(const struct sensor_value *val) {
-  return (double)val->val1 + (double)val->val2 / 1000000.0;
-}
+// static int32_t sensor_value_to_milli(const struct sensor_value *val) {
+//   /* Convert sensor_value (val1 + val2/1e6) to milli-units without floats. */
+//   return (int32_t)(val->val1 * 1000) + (int32_t)(val->val2 / 1000);
+// }
 
 static int ina3221_read_channel(const struct device *dev, uint8_t channel,
 
@@ -58,7 +60,7 @@ static int ina3221_read_channel(const struct device *dev, uint8_t channel,
   struct sensor_value idx = {.val1 = channel + 1, .val2 = 0};
 
   int ret = sensor_attr_set(
-      dev, SENSOR_CHAN_VOLTAGE,
+      dev, SENSOR_CHAN_ALL,
       (enum sensor_attribute)SENSOR_ATTR_INA3221_SELECTED_CHANNEL, &idx);
   if (ret != 0) {
     return ret;
@@ -115,6 +117,7 @@ int main(void) {
 
     for (size_t idx = 0; idx < ARRAY_SIZE(ina3221_channels); idx++) {
       const struct ina3221_channel_meta *meta = &ina3221_channels[idx];
+      // if (!device_is_ready(ina1)) {
       if (!device_is_ready(meta->dev)) {
         LOG_ERR("INA3221 device not ready: %s", meta->dev->name);
         continue;
@@ -122,6 +125,7 @@ int main(void) {
 
       struct sensor_value vbus;
       struct sensor_value icur;
+      // int rc = ina3221_read_channel(ina1, meta->channel, &vbus, &icur);
       int rc = ina3221_read_channel(meta->dev, meta->channel, &vbus, &icur);
       if (rc != 0) {
         LOG_WRN("INA3221 read failed: dev=%s ch=%u rc=%d", meta->dev->name,
@@ -129,13 +133,14 @@ int main(void) {
         continue;
       }
 
-      double v_bus = sensor_value_to_double_local(&vbus);
-      double i_bus = sensor_value_to_double_local(&icur);
+      int32_t v_bus_mv = sensor_value_to_milli(&vbus);
+      int32_t i_bus_ma = sensor_value_to_milli(&icur);
       char mqtt_buf[256];
-      int len = snprintk(mqtt_buf, sizeof(mqtt_buf),
-                         "{\"tag\":\"%s\",\"channel\":%u,\"v_bus\":%.6f,"
-                         "\"i_bus\":%.6f}",
-                         meta->tag, meta->channel + 1, v_bus, i_bus);
+      int len =
+          snprintk(mqtt_buf, sizeof(mqtt_buf),
+                   "{\"tag\":\"%s\",\"channel\":%u,\"v_bus_mv\":%d,"
+                   "\"i_bus_ma\":%d, \"temp_c\":%d}",
+                   meta->tag, meta->channel + 1, v_bus_mv, i_bus_ma, i_bus_ma);
       if (len < 0) {
         continue;
       }
@@ -143,7 +148,6 @@ int main(void) {
         len = sizeof(mqtt_buf) - 1;
       }
       LOG_DBG("sensor: %s", mqtt_buf);
-      ;
 
       app_mqtt_publish(ina3221_topic, (struct mqtt_binstr){
                                           .data = mqtt_buf,
